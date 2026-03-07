@@ -6,6 +6,7 @@ DATA = 'data_hovory.csv'
 # employee groups information
 GROUPS = ['G1', 'G2', 'G3']
 COST_PER_HOUR = {'G1': 150, 'G2': 220, 'G3': 350} # could be rewritten to fixed part + bonus from each call (if i get enough data)
+LIMIT = {'G1': 10, 'G2': 50, 'G3': 50}  # maximum total agents per group across all shifts
 
 #shift information
 SHIFT_STARTS = [8, 10, 12, 14, 16]
@@ -23,7 +24,6 @@ SPLIT = {'G3_Hard': 0.25, 'G2_Med': 0.50, 'G1_Easy': 0.25}
 
 # load data  TODO: failed load
 def read_data():
-
     df = pd.read_csv(DATA)
 
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -81,6 +81,12 @@ for t in demand_hours.index:  # ← iteruj přes INDEX (hodiny 8, 9, 10...), ne 
     
     #g1
     prob += (staff_g3 + staff_g2 + staff_g1) * capacity_per_agent >= total_req, f"Total_Coverage_Hour_{t}"
+
+
+# limit constraints - maximum total agents per group across all shifts
+for g in GROUPS:
+    total_agents = sum(shifts[(start, g)] for start in SHIFT_STARTS)
+    prob += total_agents <= LIMIT[g], f"Max_Agents_{g}"
 
 
 #ucelova funkce
