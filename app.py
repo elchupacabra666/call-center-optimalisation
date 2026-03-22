@@ -53,8 +53,10 @@ with st.sidebar:
     
     if abs(split_hard + split_med + split_easy - 1.0) > 0.01:
         st.warning("Součet musí být 100%!")
-
-# Main area - File upload and results
+    
+    st.markdown("---")
+    st.subheader("Batch parametry")
+    batch_deadline = st.number_input("Batch deadline (hodina)", min_value=8, max_value=23, value=14, step=1)# Main area - File upload and results
 uploaded_file = st.file_uploader("Nahrajte CSV soubor s daty hovorů", type=['csv'])
 
 if uploaded_file is not None:
@@ -77,9 +79,13 @@ if uploaded_file is not None:
     with st.expander("Náhled dat"):
         st.dataframe(df.head(10))
         st.write(f"Celkem záznamů: {len(df)}")
+        if 'source' in df.columns:
+            st.write(f"Stream: {len(df[df['source'] == 'stream'])}, Batch: {len(df[df['source'] == 'batch'])}")
+        if 'group' in df.columns:
+            st.write(f"G3: {len(df[df['group'] == 'G3'])}, G2: {len(df[df['group'] == 'G2'])}, G1: {len(df[df['group'] == 'G1'])}")
         
-    # Load demand
-    demand_hours = load_demand_data(df)
+    # Load demand (groups already assigned in data)
+    stream_demand_by_group, batch_total_by_group, batch_deadline_info = load_demand_data(df, batch_deadline)
     
     st.markdown("---")
     
@@ -90,7 +96,6 @@ if uploaded_file is not None:
             groups = ['G1', 'G2', 'G3']
             cost_per_hour = {'G1': cost_g1, 'G2': cost_g2, 'G3': cost_g3}
             limit = {'G1': limit_g1, 'G2': limit_g2, 'G3': limit_g3}
-            split = {'G3_Hard': split_hard, 'G2_Med': split_med, 'G1_Easy': split_easy}
             
             # Run optimization
             results = optimize_schedule(
@@ -101,7 +106,7 @@ if uploaded_file is not None:
                 shift_starts=sorted(shift_starts),
                 shift_length=shift_length,
                 occupancy=occupancy,
-                split=split
+                batch_deadline=batch_deadline
             )
             
             # Store results in session state
@@ -129,7 +134,7 @@ if 'results' in st.session_state:
     
     total_agents = sum(info['total_agents'] for info in results['agents_by_group'].values())
     avg_util = sum(row['utilization'] for row in results['hourly_coverage']) / len(results['hourly_coverage'])
-    peak_hour = max(results['hourly_coverage'], key=lambda x: x['demand'])
+    peak_hour = max(results['hourly_coverage'], key=lambda x: x['total_demand'])
     
     with col1:
         st.metric("Celkové náklady", f"{results['total_cost']:,.0f} Kč")
@@ -138,7 +143,7 @@ if 'results' in st.session_state:
     with col3:
         st.metric("Průměrné využití", f"{avg_util:.1f}%")
     with col4:
-        st.metric("Špička", f"{peak_hour['hour']}:00 ({peak_hour['demand']:.0f} min)")
+        st.metric("Špička", f"{peak_hour['hour']}:00 ({peak_hour['total_demand']:.0f} min)")
     
     st.markdown("---")
     
@@ -203,20 +208,30 @@ if 'results' in st.session_state:
     with col_right:
         st.subheader("Hodinová poptávka a kapacita")
         
-        # Hourly coverage chart
+        # Hourly coverage chart - show stacked demand by group
         df_hourly = pd.DataFrame(results['hourly_coverage'])
         
         fig = go.Figure()
         
-        # Demand line
-        fig.add_trace(go.Scatter(
-            x=df_hourly['hour'],
-            y=df_hourly['demand'],
-            mode='lines+markers',
-            name='Poptávka',
-            line=dict(color='#FF6B6B', width=3),
-            marker=dict(size=8)
-        ))
+        # Stream demand for each group (stacked)
+        for g, color in [('G3', '#FF6B6B'), ('G2', '#FFB703'), ('G1', '#90EE90')]:
+            fig.add_trace(go.Bar(
+                x=df_hourly['hour'],
+                y=df_hourly[f'stream_demand_{g.lower()}'],
+                name=f'Stream {g}',
+                marker=dict(color=color),
+                hovertemplate='%{x}:00<br>Stream ' + g + ': %{y:.1f} min<extra></extra>'
+            ))
+        
+        # Batch demand for each group (stacked on top)
+        for g, color in [('G3', '#AA3333'), ('G2', '#AA7700'), ('G1', '#669966')]:
+            fig.add_trace(go.Bar(
+                x=df_hourly['hour'],
+                y=df_hourly[f'batch_assigned_{g.lower()}'],
+                name=f'Batch {g}',
+                marker=dict(color=color, pattern_shape="/"),
+                hovertemplate='%{x}:00<br>Batch ' + g + ': %{y:.1f} min<extra></extra>'
+            ))
         
         # Capacity line
         fig.add_trace(go.Scatter(
@@ -224,16 +239,18 @@ if 'results' in st.session_state:
             y=df_hourly['capacity'],
             mode='lines+markers',
             name='Kapacita',
-            line=dict(color='#4ECDC4', width=3, dash='dash'),
-            marker=dict(size=8)
+            line=dict(color='#4ECDC4', width=3, dash='dot'),
+            marker=dict(size=8),
+            hovertemplate='%{x}:00<br>Kapacita: %{y:.0f} min<extra></extra>'
         ))
         
         fig.update_layout(
+            barmode='stack',
             xaxis_title="Hodina",
             yaxis_title="Minuty",
             hovermode='x unified',
             height=400,
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            legend=dict(orientation="v", yanchor="top", y=0.99, xanchor="right", x=0.99)
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -291,20 +308,25 @@ if 'results' in st.session_state:
     st.subheader("Detailní pokrytí po hodinách")
     
     df_detail = pd.DataFrame(results['hourly_coverage'])
-    df_detail = df_detail.rename(columns={
-        'hour': 'Hodina',
-        'demand': 'Poptávka (min)',
-        'capacity': 'Kapacita (min)',
-        'total_agents': 'Celkem agentů',
-        'utilization': 'Využití (%)'
+    
+    # Create display dataframe with group-split columns
+    df_display = pd.DataFrame({
+        'Hodina': df_detail['hour'].apply(lambda x: f"{x}:00"),
+        'Stream G1': df_detail['stream_demand_g1'].round(1),
+        'Stream G2': df_detail['stream_demand_g2'].round(1),
+        'Stream G3': df_detail['stream_demand_g3'].round(1),
+        'Batch G1': df_detail['batch_assigned_g1'].round(1),
+        'Batch G2': df_detail['batch_assigned_g2'].round(1),
+        'Batch G3': df_detail['batch_assigned_g3'].round(1),
+        'Celkem': df_detail['total_demand'].round(1),
+        'Kapacita': df_detail['capacity'].round(0),
+        'Využití %': df_detail['utilization'].round(1),
+        'G1': df_detail['G1'].astype(int),
+        'G2': df_detail['G2'].astype(int),
+        'G3': df_detail['G3'].astype(int),
     })
     
-    df_detail['Hodina'] = df_detail['Hodina'].apply(lambda x: f"{x}:00")
-    df_detail['Poptávka (min)'] = df_detail['Poptávka (min)'].round(1)
-    df_detail['Kapacita (min)'] = df_detail['Kapacita (min)'].round(0)
-    df_detail['Využití (%)'] = df_detail['Využití (%)'].round(1)
-    
-    st.dataframe(df_detail, use_container_width=True, hide_index=True)
+    st.dataframe(df_display, use_container_width=True, hide_index=True)
 
 else:
     st.info("Nahrajte CSV soubor pro začátek optimalizace")

@@ -2,26 +2,54 @@ from pulp import *
 import pandas as pd
 
 
-def load_demand_data(data_source):
+def load_demand_data(data_source, batch_deadline: int = 14):
     """
-    Load and aggregate call data from CSV file or DataFrame.
+    Load and aggregate call data from CSV file or DataFrame, split by source and group.
+    Groups are assigned during generation in generator.py.
     
     Args:
         data_source: Path to CSV file or pandas DataFrame
+        batch_deadline: Hour by which all batch calls must be completed
     
     Returns:
-        pandas Series with hourly demand in minutes, indexed by hour
+        Tuple of (stream_demand_by_group, batch_total_by_group, batch_deadline)
+        - stream_demand_by_group: Dict with keys 'G3', 'G2', 'G1', each with Series of hourly demand
+        - batch_total_by_group: Dict with keys 'G3', 'G2', 'G1', each with total minutes of batch calls
+        - batch_deadline: int, deadline hour for batch processing
     """
+    # Načteme soubor - buď CSV cestu nebo DataFrame, který už máme v paměti
     if isinstance(data_source, pd.DataFrame):
         df = data_source
     else:
         df = pd.read_csv(data_source)
     
+    # Převedeme text z CSV na správný datetime formát, aby Pandas věděl, jak s ním manipulovat
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['hour'] = df['timestamp'].dt.hour
-    demand_hour = df.groupby('hour')['duration_s'].sum() / 60
     
-    return demand_hour
+    # Oddělíme hovory na dva druhy: ty co se dělají hned (stream) a ty co si můžeme odložit (batch)
+    df_stream = df[df['source'] == 'stream']
+    df_batch = df[df['source'] == 'batch']
+    
+    # Pro každou skupinu (jednoduší, střední, těžcí agenti) sečteme kolik minut práce mají za každou hodinu
+    stream_demand_by_group = {}
+    for group in ['G1', 'G2', 'G3']:
+        df_stream_group = df_stream[df_stream['group'] == group]
+        if len(df_stream_group) > 0:
+            df_stream_group['hour'] = df_stream_group['timestamp'].dt.hour
+            stream_demand_by_group[group] = df_stream_group.groupby('hour')['duration_s'].sum() / 60
+        else:
+            stream_demand_by_group[group] = pd.Series(dtype=float)
+    
+    # Stejné jako nahoře, ale pro batch hovory - ty nemají čas, takže jen sečteme celkem za skupinu
+    batch_total_by_group = {}
+    for group in ['G1', 'G2', 'G3']:
+        df_batch_group = df_batch[df_batch['group'] == group]
+        if len(df_batch_group) > 0:
+            batch_total_by_group[group] = df_batch_group['duration_s'].sum() / 60
+        else:
+            batch_total_by_group[group] = 0.0
+    
+    return stream_demand_by_group, batch_total_by_group, batch_deadline
 
 
 def optimize_schedule(
@@ -32,20 +60,20 @@ def optimize_schedule(
     shift_starts=[8, 10, 12, 14, 16],
     shift_length=8,
     occupancy=0.50,
-    split={'G3_Hard': 0.25, 'G2_Med': 0.50, 'G1_Easy': 0.25}
+    batch_deadline: int = 14
 ):
     """
     Optimize call center staff scheduling to minimize costs while meeting demand.
     
     Args:
-        data_source: Path to CSV file or pandas DataFrame with columns 'timestamp' and 'duration_s'
+        data_source: Path to CSV file or pandas DataFrame with columns 'timestamp', 'duration_s', 'source', 'group'
         groups: List of agent groups (e.g., ['G1', 'G2', 'G3'])
         cost_per_hour: Dictionary with hourly cost for each group
         limit: Dictionary with maximum total agents per group across all shifts
         shift_starts: List of shift start hours (e.g., [8, 10, 12, 14, 16])
         shift_length: Length of each shift in hours
         occupancy: Fraction of time agents spend on calls (0.0-1.0)
-        split: Dictionary with call difficulty split (G3_Hard, G2_Med, G1_Easy)
+        batch_deadline: Hour by which all batch calls must be completed
     
     Returns:
         Dictionary with optimization results:
@@ -54,10 +82,12 @@ def optimize_schedule(
             - shifts: Dict of (start_hour, group) -> number of agents
             - agents_by_group: Dict of group -> (total_agents, total_cost)
             - hourly_coverage: List of dicts with hourly staffing details
-            - demand_hours: Original demand data (pandas Series)
+            - stream_demand_by_group: Stream call demand by group
+            - batch_total_by_group: Total batch work by group
+            - batch_deadline: Deadline hour for batch processing
     """
     
-    # Helper function to count active workers at a given hour
+    # Pomocná funkce - spočítá kolik agentů je aktuálně v práci v konkrétní hodinu
     def get_active_workers(shifts_var, hour, group):
         count = 0
         for start in shift_starts:
@@ -65,48 +95,86 @@ def optimize_schedule(
                 count += shifts_var[(start, group)]
         return count
     
-    # Load data
-    demand_hours = load_demand_data(data_source)
+    # Načteme data - stream a batch hovory rozdělené po skupinách
+    stream_demand_by_group, batch_total_by_group, batch_deadline = load_demand_data(data_source, batch_deadline)
     
-    # Create optimization model
+    # Vytvoříme optimalizační problém - říkáme: chceme minimalizovat náklady
     prob = LpProblem("Shift_Scheduling_Cascade", LpMinimize)
     
-    # Decision variables: number of agents for each (shift_start, group)
+    # Rozhodovací proměnné: Kolik agentů (z které skupiny) přijmeme na jakou směnu?
+    # Příklad: shifts[(8, 'G3')] = 5 znamená "5 agentů skupiny G3 na směnu od 8:00"
     shifts = LpVariable.dicts("Nabor", 
                                ((h, g) for h in shift_starts for g in groups), 
                                lowBound=0, cat='Integer')
     
-    # Demand coverage constraints for each hour
-    for t in demand_hours.index:
-        # Calculate demand for each difficulty level
-        total_req = demand_hours[t]
-        req_hard = total_req * split['G3_Hard']
-        req_med  = total_req * split['G2_Med']
-        req_easy = total_req * split['G1_Easy']
-        
-        # Count active staff by group
+    # Rozhodovací proměnné: Kolik minut batch práce budeme dělat v každé hodině (pro každou skupinu)?
+    # Příklad: batch_assigned_by_group[(10, 'G1')] = 30 znamená "30 minut batch práce pro G1 v 10:00"
+    batch_assigned_by_group = LpVariable.dicts("BatchAssignedByGroup",
+                                               ((h, g) for h in range(8, batch_deadline + 1) for g in groups),
+                                               lowBound=0, cat='Continuous')
+    
+    # Omezení 1: Všechna batch práce musí být hotová do deadline
+    # Pokud má G1 100 minut batch práce, musíme ji rozvrhnout mezi 8:00 a deadline tak, aby se sečetla na 100
+    for g in groups:
+        prob += lpSum([batch_assigned_by_group[(h, g)] for h in range(8, batch_deadline + 1)]) == batch_total_by_group[g], f"Batch_Deadline_{g}"
+    
+    # Najdeme všechny hodiny, kde jsou stream hovory - ty se musí pokrýt v každém případě
+    all_hours = set()
+    for g in groups:
+        all_hours.update(stream_demand_by_group[g].index)
+    all_hours = sorted(all_hours)
+    
+    # Omezení 2: V každé hodině musíme mít dost kapacity na stream hovory + batch práci kterou jsme naplánovali
+    # Stream hovory jsou naléhavé (zákazník čeká), batch si můžeme vybrat kdy dělat
+    for t in all_hours:
+        # Spočítáme kolik agentů máme v každé skupině v tuto hodinu
         staff_g3 = get_active_workers(shifts, t, 'G3')
         staff_g2 = get_active_workers(shifts, t, 'G2')
         staff_g1 = get_active_workers(shifts, t, 'G1')
         
-        # Each agent has capacity of 60 min * occupancy per hour
+        # Každý agent zvládne 30 minut práce za hodinu (60 minut * 50% occupancy)
         capacity_per_agent = 60 * occupancy
         
-        # G3 agents handle hard calls
-        prob += staff_g3 * capacity_per_agent >= req_hard, f"Hard_Coverage_Hour_{t}"
+        # Pro každou skupinu: Kapacita agentů >= potřebná práce (stream + batch)
+        stream_g3 = stream_demand_by_group['G3'].get(t, 0)
+        batch_g3 = batch_assigned_by_group[(t, 'G3')] if t <= batch_deadline else 0
+        prob += staff_g3 * capacity_per_agent >= stream_g3 + batch_g3, f"G3_Coverage_Hour_{t}"
         
-        # G3 + G2 agents handle hard + medium calls
-        prob += (staff_g3 + staff_g2) * capacity_per_agent >= req_hard + req_med, f"Med_Coverage_Hour_{t}"
+        stream_g2 = stream_demand_by_group['G2'].get(t, 0)
+        batch_g2 = batch_assigned_by_group[(t, 'G2')] if t <= batch_deadline else 0
+        prob += staff_g2 * capacity_per_agent >= stream_g2 + batch_g2, f"G2_Coverage_Hour_{t}"
         
-        # All agents handle all calls
-        prob += (staff_g3 + staff_g2 + staff_g1) * capacity_per_agent >= total_req, f"Total_Coverage_Hour_{t}"
+        stream_g1 = stream_demand_by_group['G1'].get(t, 0)
+        batch_g1 = batch_assigned_by_group[(t, 'G1')] if t <= batch_deadline else 0
+        prob += staff_g1 * capacity_per_agent >= stream_g1 + batch_g1, f"G1_Coverage_Hour_{t}"
     
-    # Limit constraints: maximum total agents per group
+    # Omezení 3: V hodinách bez stream demand - zajistit kapacitu na batch
+    # Například: Ráno než se stream hovory začnou, nebo mezi špičkami.
+    # Pokud je to PŘED deadline (t <= batch_deadline), musíme zajistit,
+    # že máme dost agentů aby zvládli naplánovanou batch práci.
+    for t in range(8, 24):
+        if t not in all_hours and t <= batch_deadline:
+            staff_g3 = get_active_workers(shifts, t, 'G3')
+            staff_g2 = get_active_workers(shifts, t, 'G2')
+            staff_g1 = get_active_workers(shifts, t, 'G1')
+            
+            capacity_per_agent = 60 * occupancy
+            
+            batch_g3 = batch_assigned_by_group[(t, 'G3')] if t <= batch_deadline else 0
+            batch_g2 = batch_assigned_by_group[(t, 'G2')] if t <= batch_deadline else 0
+            batch_g1 = batch_assigned_by_group[(t, 'G1')] if t <= batch_deadline else 0
+            
+            prob += staff_g3 * capacity_per_agent >= batch_g3, f"G3_Batch_Only_Hour_{t}"
+            prob += staff_g2 * capacity_per_agent >= batch_g2, f"G2_Batch_Only_Hour_{t}"
+            prob += staff_g1 * capacity_per_agent >= batch_g1, f"G1_Batch_Only_Hour_{t}"
+    
+    # Omezení 4: Nemůžeme najmout unlimited agentů - máme limit na každou skupinu
     for g in groups:
         total_agents = sum(shifts[(start, g)] for start in shift_starts)
         prob += total_agents <= limit[g], f"Max_Agents_{g}"
     
-    # Objective function: minimize total cost
+    # Cíl: Minimalizujeme celkové náklady na mzdy
+    # (počet agentů × délka směny × hodinová sazba)
     total_cost = 0
     for start in shift_starts:
         for g in groups:
@@ -114,26 +182,29 @@ def optimize_schedule(
     
     prob += total_cost
     
-    # Solve the optimization problem
+    # Spustíme solver - najde nejlevnější řešení které splňuje všechna omezení
     prob.solve()
     
-    # Extract results
+    # Vyextrahujeme výsledky z optimalizace
     results = {
         'status': LpStatus[prob.status],
         'total_cost': value(prob.objective) if prob.status == 1 else None,
         'shifts': {},
         'agents_by_group': {},
         'hourly_coverage': [],
-        'demand_hours': demand_hours
+        'stream_demand_by_group': stream_demand_by_group,
+        'batch_total_by_group': batch_total_by_group,
+        'batch_deadline': batch_deadline
     }
     
-    if prob.status == 1:  # Optimal solution found
-        # Extract shift assignments
+    # Pokud se podařilo najít optimální řešení, rozpracujeme výsledky
+    if prob.status == 1:  # 1 = Optimal solution found
+        # Zjistíme kolik agentů má být na každé směně
         for start in shift_starts:
             for g in groups:
                 results['shifts'][(start, g)] = int(value(shifts[(start, g)]))
         
-        # Calculate totals by group
+        # Spočítáme celkem agentů a náklady pro každou skupinu
         for g in groups:
             total_agents = sum(results['shifts'][(start, g)] for start in shift_starts)
             group_cost = sum(results['shifts'][(start, g)] * shift_length * cost_per_hour[g] 
@@ -143,8 +214,9 @@ def optimize_schedule(
                 'total_cost': group_cost
             }
         
-        # Calculate hourly coverage
-        for t in demand_hours.index:
+        # Pro každou hodinu vypočítáme detaily: kolik agentů, kolik práce, jaká obsazenost
+        for t in range(8, 24):
+            # Spočítáme kolik agentů které skupiny je teď v práci
             staff_by_group = {}
             for g in groups:
                 staff_by_group[g] = sum(
@@ -153,14 +225,38 @@ def optimize_schedule(
                     if start <= t < start + shift_length
                 )
             
+            # Kapacita = součet všech agentů × čas kterou zvládnou za hodinu
             total_agents = sum(staff_by_group.values())
             total_capacity = total_agents * 60 * occupancy
-            demand = demand_hours[t]
-            utilization = (demand / total_capacity * 100) if total_capacity > 0 else 0
             
+            # Jaké máme požadavky na práci v tuto hodinu (stream + batch)
+            stream_demand_g1 = stream_demand_by_group['G1'].get(t, 0)
+            stream_demand_g2 = stream_demand_by_group['G2'].get(t, 0)
+            stream_demand_g3 = stream_demand_by_group['G3'].get(t, 0)
+            total_stream = stream_demand_g1 + stream_demand_g2 + stream_demand_g3
+            
+            # Jak jsme si naplánovali zpracovat batch (z řešení optimalizace)
+            batch_g1 = value(batch_assigned_by_group[(t, 'G1')]) if t <= batch_deadline else 0
+            batch_g2 = value(batch_assigned_by_group[(t, 'G2')]) if t <= batch_deadline else 0
+            batch_g3 = value(batch_assigned_by_group[(t, 'G3')]) if t <= batch_deadline else 0
+            total_batch = batch_g1 + batch_g2 + batch_g3
+            
+            # Celková práce a jak moc jsme vytížení
+            total_work = total_stream + total_batch
+            utilization = (total_work / total_capacity * 100) if total_capacity > 0 else 0
+            
+            # Uložíme všechny detaily pro tuto hodinu
             results['hourly_coverage'].append({
                 'hour': t,
-                'demand': demand,
+                'stream_demand_g1': stream_demand_g1,
+                'stream_demand_g2': stream_demand_g2,
+                'stream_demand_g3': stream_demand_g3,
+                'stream_demand_total': total_stream,
+                'batch_assigned_g1': batch_g1,
+                'batch_assigned_g2': batch_g2,
+                'batch_assigned_g3': batch_g3,
+                'batch_assigned_total': total_batch,
+                'total_demand': total_work,
                 'capacity': total_capacity,
                 'G1': staff_by_group.get('G1', 0),
                 'G2': staff_by_group.get('G2', 0),
@@ -183,11 +279,19 @@ def print_results(results, shift_starts, shift_length, groups, cost_per_hour):
         groups: List of agent groups
         cost_per_hour: Cost per hour for each group
     """
+    # Řekneme jestli se to vyřešilo nebo ne
     print(f"\nStatus: {results['status']}")
     
     if results['total_cost'] is not None:
-        print(f"Celkové náklady na mzdy: {results['total_cost']:,.0f} Kč\n")
+        # Základní informace o celkových nákladech a batch práci
+        print(f"Celkové náklady na mzdy: {results['total_cost']:,.0f} Kč")
+        print(f"\nBatch work po skupinách:")
+        for g in groups:
+            total = results['batch_total_by_group'][g]
+            print(f"  {g}: {total:.1f} minut")
+        print(f"Deadline: {results['batch_deadline']}:00\n")
         
+        # Detailní přehled - jaký je náš optimální plán směn
         print("=" * 60)
         print("OPTIMÁLNÍ ROZLOŽENÍ SMĚN:")
         print("=" * 60)
@@ -199,6 +303,7 @@ def print_results(results, shift_starts, shift_length, groups, cost_per_hour):
                 cost = count * shift_length * cost_per_hour[g]
                 print(f"  {g}: {count} agentů (náklady: {cost:,} Kč)")
         
+        # Kolik máme dohromady agentů v každé skupině
         print("\n" + "=" * 60)
         print("CELKOVÝ POČET AGENTŮ PO SKUPINÁCH:")
         print("=" * 60)
@@ -207,22 +312,25 @@ def print_results(results, shift_starts, shift_length, groups, cost_per_hour):
             info = results['agents_by_group'][g]
             print(f"{g}: {info['total_agents']} agentů celkem (náklady: {info['total_cost']:,.0f} Kč)")
         
+        # Hodinový rozpis - kde jsme vytížení, kde máme kapacitu
         print("\n" + "=" * 60)
         print("POKRYTÍ POPTÁVKY PO HODINÁCH:")
         print("=" * 60)
         
         for row in results['hourly_coverage']:
-            print(f"Hodina {row['hour']}:00 | Poptávka: {row['demand']:6.1f} min | "
+            print(f"Hodina {row['hour']}:00 | Stream: G1={row['stream_demand_g1']:5.1f} G2={row['stream_demand_g2']:5.1f} G3={row['stream_demand_g3']:5.1f} | "
+                  f"Batch: G1={row['batch_assigned_g1']:5.1f} G2={row['batch_assigned_g2']:5.1f} G3={row['batch_assigned_g3']:5.1f} | "
                   f"Kapacita: {row['capacity']:4.0f} min | "
                   f"Agenti: G3={row['G3']}, G2={row['G2']}, G1={row['G1']} | "
                   f"Využití: {row['utilization']:.1f}%")
     else:
+        # Pokud se nepodařilo najít řešení
         print("Řešení nebylo nalezeno!")
 
 
 # Main execution - only runs when script is called directly
 if __name__ == "__main__":
-    # Default configuration
+    # Nastavení: kolik maximálně agentů, jaké mzdy, jak dlouhé směny, apod.
     DATA = 'data_hovory.csv'
     GROUPS = ['G1', 'G2', 'G3']
     COST_PER_HOUR = {'G1': 150, 'G2': 220, 'G3': 350}
@@ -230,13 +338,23 @@ if __name__ == "__main__":
     SHIFT_STARTS = [8, 10, 12, 14, 16]
     SHIFT_LENGTH = 8
     OCCUPANCY = 0.50
-    SPLIT = {'G3_Hard': 0.25, 'G2_Med': 0.50, 'G1_Easy': 0.25}
+    BATCH_DEADLINE = 14
     
+    # Krok 1: Načteme data a uvidíme co máme za práci
     print("Načítám data...")
-    demand_hours = load_demand_data(DATA)
-    print("Poptávka v minutách pro jednotlivé hodiny:")
-    print(demand_hours)
+    stream_demand_by_group, batch_total_by_group, batch_deadline = load_demand_data(DATA, BATCH_DEADLINE)
+    print(f"Poptávka stream hovorů v minutách pro jednotlivé hodiny (G1):")
+    print(stream_demand_by_group['G1'])
+    print(f"\nPoptávka stream hovorů v minutách pro jednotlivé hodiny (G2):")
+    print(stream_demand_by_group['G2'])
+    print(f"\nPoptávka stream hovorů v minutách pro jednotlivé hodiny (G3):")
+    print(stream_demand_by_group['G3'])
+    print(f"\nCelkem batch práce po skupinách:")
+    for g in GROUPS:
+        print(f"  {g}: {batch_total_by_group[g]:.1f} minut")
+    print(f"Deadline: {batch_deadline}:00")
     
+    # Krok 2: Spustíme optimalizaci
     print("\nOptimalizuji rozvrh...")
     results = optimize_schedule(
         data_source=DATA,
@@ -246,7 +364,8 @@ if __name__ == "__main__":
         shift_starts=SHIFT_STARTS,
         shift_length=SHIFT_LENGTH,
         occupancy=OCCUPANCY,
-        split=SPLIT
+        batch_deadline=BATCH_DEADLINE
     )
     
+    # Krok 3: Vypíšeme výsledky
     print_results(results, SHIFT_STARTS, SHIFT_LENGTH, GROUPS, COST_PER_HOUR)
