@@ -2,7 +2,14 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 
-def generuj_provoz(pocet_hovoru=500, batch_ratio: float = 0.70, output_path: str = "data_hovory.csv", seed: int | None = None, split: dict = None):
+def generuj_provoz(
+    pocet_hovoru=500,
+    batch_ratio: float = 0.70,
+    output_path: str = "data_hovory.csv",
+    seed: int | None = None,
+    split: dict = None,
+    use_night_batch: bool = True,
+):
     """
     Generate synthetic call center data with batch/stream and difficulty group assignment.
     
@@ -12,6 +19,7 @@ def generuj_provoz(pocet_hovoru=500, batch_ratio: float = 0.70, output_path: str
         output_path: Path to save CSV file
         seed: Random seed for reproducibility
         split: Dict with difficulty split {'G3_Hard': 0.25, 'G2_Med': 0.50, 'G1_Easy': 0.25}
+        use_night_batch: If False, all calls are generated as stream (no batch backlog)
     """
     if split is None:
         split = {'G3_Hard': 0.25, 'G2_Med': 0.50, 'G1_Easy': 0.25}
@@ -28,9 +36,14 @@ def generuj_provoz(pocet_hovoru=500, batch_ratio: float = 0.70, output_path: str
     durations_list = list(durations.astype(int))
     
     # 2. Split into batch and stream calls
-    num_batch = round(pocet_hovoru * batch_ratio)
-    num_stream = pocet_hovoru - num_batch
-    sources = ['batch'] * num_batch + ['stream'] * num_stream
+    if use_night_batch:
+        num_batch = round(pocet_hovoru * batch_ratio)
+        num_stream = pocet_hovoru - num_batch
+        sources = ['batch'] * num_batch + ['stream'] * num_stream
+    else:
+        num_batch = 0
+        num_stream = pocet_hovoru
+        sources = ['stream'] * num_stream
     
     # 3. Assign difficulty groups (G1, G2, G3) to all calls
     n_g3 = round(pocet_hovoru * split['G3_Hard'])
@@ -41,7 +54,7 @@ def generuj_provoz(pocet_hovoru=500, batch_ratio: float = 0.70, output_path: str
     np.random.shuffle(groups)  # Shuffle groups so they're not systematically ordered
     
     # 4. Timestamps
-    start_dne = datetime(2026, 3, 2, 8, 0, 0)
+    start_dne = datetime(2026, 3, 2, 9, 0, 0)
     vterin_v_pracovni_dobe = 12 * 3600  # 12 hodin provozu (8:00 - 20:00)
     
     # Batch calls get NaT, stream calls get timestamps
@@ -71,8 +84,11 @@ def generuj_provoz(pocet_hovoru=500, batch_ratio: float = 0.70, output_path: str
     })
     
     # Save to CSV
-    df.to_csv(output_path, index=False)
-    print(f"Generování hotovo! Vytvořeno {pocet_hovoru} hovorů ({num_batch} batch, {num_stream} stream) v souboru {output_path}")
+    if output_path:
+        df.to_csv(output_path, index=False)
+        print(f"Generování hotovo! Vytvořeno {pocet_hovoru} hovorů ({num_batch} batch, {num_stream} stream) v souboru {output_path}")
+    else:
+        print(f"Generování hotovo! Vytvořeno {pocet_hovoru} hovorů ({num_batch} batch, {num_stream} stream).")
     
     return df
 

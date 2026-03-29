@@ -1,501 +1,501 @@
 timestamp,duration_s,source,group
-2026-03-02 08:00:03,473,stream,G1
-2026-03-02 08:05:36,1278,stream,G2
-2026-03-02 08:05:54,389,stream,G1
-2026-03-02 08:22:28,337,stream,G2
-2026-03-02 08:29:49,429,stream,G3
-2026-03-02 08:30:14,685,stream,G2
-2026-03-02 08:35:18,728,stream,G1
-2026-03-02 08:50:14,1322,stream,G3
-2026-03-02 08:52:42,705,stream,G3
-2026-03-02 08:54:24,683,stream,G2
-2026-03-02 08:58:36,686,stream,G2
-2026-03-02 08:59:20,300,stream,G2
-2026-03-02 09:03:43,757,stream,G3
-2026-03-02 09:05:05,656,stream,G3
-2026-03-02 09:11:53,974,stream,G1
-2026-03-02 09:14:29,516,stream,G2
-2026-03-02 09:23:01,429,stream,G1
-2026-03-02 09:27:53,1245,stream,G3
-2026-03-02 09:31:49,496,stream,G2
-2026-03-02 09:33:34,588,stream,G2
-2026-03-02 09:37:13,529,stream,G1
-2026-03-02 09:38:39,1144,stream,G2
-2026-03-02 09:51:45,700,stream,G2
-2026-03-02 09:55:40,955,stream,G1
-2026-03-02 09:57:55,662,stream,G2
-2026-03-02 10:06:35,406,stream,G3
-2026-03-02 10:08:11,1086,stream,G2
-2026-03-02 10:08:23,240,stream,G1
-2026-03-02 10:27:17,746,stream,G2
-2026-03-02 10:27:38,696,stream,G3
-2026-03-02 10:28:05,294,stream,G1
-2026-03-02 10:28:34,1477,stream,G1
-2026-03-02 10:29:20,729,stream,G2
-2026-03-02 10:33:03,1278,stream,G3
-2026-03-02 10:36:19,857,stream,G3
-2026-03-02 10:37:22,776,stream,G1
-2026-03-02 10:57:19,535,stream,G2
-2026-03-02 10:58:33,868,stream,G2
-2026-03-02 11:02:38,874,stream,G3
-2026-03-02 11:13:13,524,stream,G1
-2026-03-02 11:13:51,525,stream,G2
-2026-03-02 11:17:54,610,stream,G3
-2026-03-02 11:25:33,1062,stream,G2
-2026-03-02 11:31:41,1401,stream,G2
-2026-03-02 11:38:26,347,stream,G1
-2026-03-02 11:42:03,1262,stream,G2
-2026-03-02 11:42:57,1443,stream,G2
-2026-03-02 11:43:33,649,stream,G2
-2026-03-02 11:49:54,1271,stream,G2
-2026-03-02 11:50:00,669,stream,G3
-2026-03-02 11:53:09,397,stream,G2
-2026-03-02 11:58:11,1156,stream,G2
-2026-03-02 12:03:44,752,stream,G2
-2026-03-02 12:07:32,383,stream,G1
-2026-03-02 12:26:53,677,stream,G1
-2026-03-02 12:27:08,1248,stream,G2
-2026-03-02 12:29:45,295,stream,G1
-2026-03-02 12:33:45,441,stream,G3
-2026-03-02 12:37:41,428,stream,G1
-2026-03-02 12:38:53,1041,stream,G3
-2026-03-02 12:41:09,766,stream,G3
-2026-03-02 12:43:20,174,stream,G1
-2026-03-02 12:56:44,977,stream,G1
-2026-03-02 12:59:04,1527,stream,G2
-2026-03-02 12:59:57,422,stream,G2
-2026-03-02 13:02:18,698,stream,G2
-2026-03-02 13:05:52,1213,stream,G2
-2026-03-02 13:11:06,2282,stream,G2
-2026-03-02 13:28:57,506,stream,G3
-2026-03-02 13:43:10,566,stream,G1
-2026-03-02 13:48:24,856,stream,G1
-2026-03-02 13:54:17,492,stream,G1
-2026-03-02 13:56:46,743,stream,G2
-2026-03-02 13:58:38,1438,stream,G1
-2026-03-02 13:59:21,747,stream,G2
-2026-03-02 14:03:59,1074,stream,G3
-2026-03-02 14:14:16,848,stream,G1
-2026-03-02 14:15:27,534,stream,G1
-2026-03-02 14:22:30,334,stream,G3
-2026-03-02 14:30:51,611,stream,G1
-2026-03-02 14:36:15,674,stream,G2
-2026-03-02 14:38:03,1080,stream,G3
-2026-03-02 14:40:39,1212,stream,G2
-2026-03-02 14:41:11,479,stream,G1
-2026-03-02 14:41:18,893,stream,G2
-2026-03-02 14:42:00,898,stream,G3
-2026-03-02 14:44:43,647,stream,G3
-2026-03-02 14:49:53,1177,stream,G3
-2026-03-02 14:57:41,460,stream,G2
-2026-03-02 15:03:57,533,stream,G3
-2026-03-02 15:04:23,563,stream,G1
-2026-03-02 15:11:02,744,stream,G2
-2026-03-02 15:15:01,815,stream,G2
-2026-03-02 15:27:35,140,stream,G2
-2026-03-02 15:33:10,525,stream,G1
-2026-03-02 15:47:51,1015,stream,G1
-2026-03-02 15:48:00,914,stream,G2
-2026-03-02 15:53:16,527,stream,G2
-2026-03-02 15:57:25,1047,stream,G2
-2026-03-02 16:03:48,633,stream,G2
-2026-03-02 16:04:21,605,stream,G3
-2026-03-02 16:07:43,1686,stream,G3
-2026-03-02 16:25:18,524,stream,G2
-2026-03-02 16:29:08,1396,stream,G3
-2026-03-02 16:34:33,548,stream,G3
-2026-03-02 16:37:05,1160,stream,G3
-2026-03-02 16:37:54,804,stream,G1
-2026-03-02 16:43:03,663,stream,G2
-2026-03-02 16:47:11,787,stream,G2
-2026-03-02 16:52:05,755,stream,G1
-2026-03-02 16:53:34,929,stream,G2
-2026-03-02 17:00:01,634,stream,G1
-2026-03-02 17:01:09,675,stream,G3
-2026-03-02 17:01:32,1379,stream,G2
-2026-03-02 17:04:30,541,stream,G2
-2026-03-02 17:09:03,1675,stream,G1
-2026-03-02 17:16:44,713,stream,G3
-2026-03-02 17:19:44,416,stream,G2
-2026-03-02 17:25:15,439,stream,G3
-2026-03-02 17:40:24,1053,stream,G1
-2026-03-02 17:42:27,1242,stream,G2
-2026-03-02 17:42:27,657,stream,G2
-2026-03-02 17:44:30,483,stream,G2
-2026-03-02 17:47:42,558,stream,G3
-2026-03-02 17:50:18,528,stream,G2
-2026-03-02 17:57:00,791,stream,G2
-2026-03-02 17:59:24,321,stream,G2
-2026-03-02 18:09:12,243,stream,G3
-2026-03-02 18:16:40,731,stream,G1
-2026-03-02 18:16:54,843,stream,G3
-2026-03-02 18:20:04,289,stream,G3
-2026-03-02 18:21:23,582,stream,G1
-2026-03-02 18:22:02,904,stream,G2
-2026-03-02 18:22:41,633,stream,G3
-2026-03-02 18:32:59,1014,stream,G2
-2026-03-02 18:55:52,1333,stream,G1
-2026-03-02 18:58:17,345,stream,G2
-2026-03-02 19:05:50,1308,stream,G2
-2026-03-02 19:07:24,1585,stream,G2
-2026-03-02 19:09:15,634,stream,G1
-2026-03-02 19:14:50,554,stream,G2
-2026-03-02 19:16:36,1695,stream,G2
-2026-03-02 19:21:47,353,stream,G1
-2026-03-02 19:32:24,1041,stream,G1
-2026-03-02 19:33:47,1295,stream,G3
-2026-03-02 19:37:08,674,stream,G1
-2026-03-02 19:41:41,859,stream,G2
-2026-03-02 19:48:31,1080,stream,G2
-2026-03-02 19:52:12,1343,stream,G2
-2026-03-02 19:52:21,404,stream,G2
-,1949,batch,G3
-,1655,batch,G3
-,1715,batch,G1
-,536,batch,G3
-,837,batch,G2
-,447,batch,G3
-,877,batch,G2
-,1056,batch,G2
-,1143,batch,G2
-,924,batch,G2
-,591,batch,G2
-,523,batch,G3
-,353,batch,G2
-,342,batch,G3
-,1218,batch,G3
-,987,batch,G3
-,601,batch,G2
-,2647,batch,G1
-,1308,batch,G2
-,371,batch,G2
-,1192,batch,G1
-,831,batch,G2
-,700,batch,G2
-,688,batch,G3
-,917,batch,G3
-,1390,batch,G2
-,611,batch,G2
-,1615,batch,G1
-,915,batch,G3
-,495,batch,G2
-,327,batch,G2
-,794,batch,G3
-,633,batch,G1
-,923,batch,G3
-,301,batch,G1
-,1130,batch,G3
-,517,batch,G3
-,1809,batch,G3
-,551,batch,G1
-,726,batch,G2
-,687,batch,G2
-,430,batch,G3
-,395,batch,G2
-,598,batch,G1
-,1122,batch,G2
-,443,batch,G1
-,1523,batch,G2
-,1236,batch,G3
-,514,batch,G1
-,239,batch,G2
-,821,batch,G1
-,563,batch,G1
-,373,batch,G1
-,403,batch,G2
-,1199,batch,G3
-,1046,batch,G3
-,927,batch,G2
-,810,batch,G2
-,781,batch,G2
-,1691,batch,G2
-,490,batch,G2
-,391,batch,G2
-,892,batch,G2
-,552,batch,G2
-,557,batch,G2
-,959,batch,G2
-,1284,batch,G2
-,567,batch,G3
-,527,batch,G3
-,1280,batch,G3
-,693,batch,G3
-,697,batch,G2
-,468,batch,G2
-,1962,batch,G3
-,678,batch,G2
-,643,batch,G2
-,750,batch,G1
-,1085,batch,G2
-,836,batch,G1
-,870,batch,G2
-,924,batch,G1
-,2262,batch,G2
-,737,batch,G1
-,639,batch,G2
-,282,batch,G3
-,2338,batch,G2
-,449,batch,G2
-,737,batch,G2
-,775,batch,G2
-,597,batch,G1
-,661,batch,G2
+2026-03-02 09:13:06,443,stream,G2
+2026-03-02 09:16:50,994,stream,G2
+2026-03-02 09:26:07,1119,stream,G1
+2026-03-02 09:41:03,1606,stream,G3
+2026-03-02 09:42:42,757,stream,G3
+2026-03-02 09:44:43,1836,stream,G2
+2026-03-02 09:56:13,775,stream,G1
+2026-03-02 09:56:22,681,stream,G2
+2026-03-02 09:59:20,1496,stream,G3
+2026-03-02 10:00:16,584,stream,G2
+2026-03-02 10:05:43,335,stream,G2
+2026-03-02 10:05:53,335,stream,G2
+2026-03-02 10:16:02,527,stream,G3
+2026-03-02 10:19:55,397,stream,G2
+2026-03-02 10:23:50,490,stream,G3
+2026-03-02 10:26:04,445,stream,G2
+2026-03-02 10:34:22,562,stream,G2
+2026-03-02 10:34:58,575,stream,G2
+2026-03-02 10:37:23,1281,stream,G2
+2026-03-02 10:39:39,602,stream,G2
+2026-03-02 10:39:50,737,stream,G2
+2026-03-02 10:44:55,560,stream,G1
+2026-03-02 10:45:00,492,stream,G2
+2026-03-02 10:49:33,536,stream,G1
+2026-03-02 10:53:51,1108,stream,G2
+2026-03-02 10:54:26,540,stream,G2
+2026-03-02 11:04:15,208,stream,G1
+2026-03-02 11:09:18,340,stream,G1
+2026-03-02 11:27:10,1134,stream,G2
+2026-03-02 11:30:39,666,stream,G1
+2026-03-02 11:32:12,1269,stream,G3
+2026-03-02 11:37:24,3705,stream,G2
+2026-03-02 11:45:56,382,stream,G2
+2026-03-02 11:56:23,842,stream,G1
+2026-03-02 11:59:12,1107,stream,G3
+2026-03-02 12:01:35,683,stream,G2
+2026-03-02 12:07:50,378,stream,G1
+2026-03-02 12:10:18,916,stream,G3
+2026-03-02 12:14:38,616,stream,G2
+2026-03-02 12:15:17,540,stream,G1
+2026-03-02 12:17:07,1870,stream,G2
+2026-03-02 12:17:23,783,stream,G3
+2026-03-02 12:27:28,409,stream,G3
+2026-03-02 12:31:37,903,stream,G1
+2026-03-02 12:35:07,558,stream,G3
+2026-03-02 12:41:06,2332,stream,G2
+2026-03-02 12:42:33,700,stream,G2
+2026-03-02 12:47:25,1047,stream,G2
+2026-03-02 12:49:28,615,stream,G2
+2026-03-02 12:53:39,764,stream,G3
+2026-03-02 12:53:59,1388,stream,G3
+2026-03-02 12:57:35,807,stream,G3
+2026-03-02 12:58:17,777,stream,G2
+2026-03-02 12:59:39,403,stream,G2
+2026-03-02 13:10:00,1965,stream,G1
+2026-03-02 13:10:08,455,stream,G2
+2026-03-02 13:11:49,1555,stream,G3
+2026-03-02 13:15:01,695,stream,G3
+2026-03-02 13:21:25,399,stream,G1
+2026-03-02 13:35:19,938,stream,G2
+2026-03-02 13:39:32,427,stream,G2
+2026-03-02 13:44:58,1601,stream,G3
+2026-03-02 13:52:49,2629,stream,G1
+2026-03-02 14:03:50,361,stream,G2
+2026-03-02 14:06:47,328,stream,G2
+2026-03-02 14:07:17,662,stream,G3
+2026-03-02 14:14:01,518,stream,G2
+2026-03-02 14:16:39,432,stream,G2
+2026-03-02 14:25:10,724,stream,G2
+2026-03-02 14:27:29,818,stream,G1
+2026-03-02 14:31:18,1768,stream,G2
+2026-03-02 14:33:23,1954,stream,G2
+2026-03-02 14:34:56,625,stream,G2
+2026-03-02 14:46:12,902,stream,G2
+2026-03-02 14:47:18,960,stream,G3
+2026-03-02 14:56:48,1100,stream,G3
+2026-03-02 14:58:53,521,stream,G1
+2026-03-02 14:59:13,765,stream,G1
+2026-03-02 15:07:28,979,stream,G1
+2026-03-02 15:10:42,349,stream,G1
+2026-03-02 15:16:37,555,stream,G3
+2026-03-02 15:20:28,1790,stream,G3
+2026-03-02 15:28:58,691,stream,G1
+2026-03-02 15:36:43,263,stream,G1
+2026-03-02 15:37:10,506,stream,G2
+2026-03-02 15:42:11,764,stream,G1
+2026-03-02 15:58:29,919,stream,G1
+2026-03-02 16:07:43,1532,stream,G2
+2026-03-02 16:11:26,1094,stream,G1
+2026-03-02 16:13:16,349,stream,G2
+2026-03-02 16:19:12,663,stream,G1
+2026-03-02 16:21:47,425,stream,G2
+2026-03-02 16:34:00,596,stream,G2
+2026-03-02 16:35:08,1259,stream,G2
+2026-03-02 16:48:18,738,stream,G3
+2026-03-02 16:50:07,456,stream,G3
+2026-03-02 16:51:28,1393,stream,G2
+2026-03-02 16:56:46,642,stream,G3
+2026-03-02 17:03:21,1468,stream,G2
+2026-03-02 17:14:46,699,stream,G2
+2026-03-02 17:16:38,1025,stream,G1
+2026-03-02 17:23:36,1014,stream,G3
+2026-03-02 17:26:20,476,stream,G3
+2026-03-02 17:31:45,1601,stream,G1
+2026-03-02 17:35:29,1348,stream,G2
+2026-03-02 17:36:36,686,stream,G2
+2026-03-02 17:40:23,781,stream,G2
+2026-03-02 17:41:23,1380,stream,G3
+2026-03-02 17:45:11,1210,stream,G2
+2026-03-02 17:45:15,931,stream,G1
+2026-03-02 17:51:34,761,stream,G2
+2026-03-02 17:53:42,696,stream,G3
+2026-03-02 17:55:35,1213,stream,G3
+2026-03-02 18:08:19,653,stream,G1
+2026-03-02 18:16:26,581,stream,G1
+2026-03-02 18:29:15,507,stream,G2
+2026-03-02 18:35:41,528,stream,G2
+2026-03-02 18:37:28,409,stream,G3
+2026-03-02 18:39:31,494,stream,G1
+2026-03-02 18:40:12,797,stream,G2
+2026-03-02 18:53:20,1140,stream,G3
+2026-03-02 18:55:16,438,stream,G3
+2026-03-02 19:01:42,564,stream,G2
+2026-03-02 19:08:36,711,stream,G2
+2026-03-02 19:10:18,464,stream,G3
+2026-03-02 19:11:49,1070,stream,G3
+2026-03-02 19:16:10,1524,stream,G2
+2026-03-02 19:16:17,310,stream,G2
+2026-03-02 19:17:43,2127,stream,G1
+2026-03-02 19:17:46,771,stream,G3
+2026-03-02 19:18:23,568,stream,G1
+2026-03-02 19:22:03,495,stream,G3
+2026-03-02 19:33:10,847,stream,G1
+2026-03-02 19:42:29,1374,stream,G1
+2026-03-02 19:43:41,504,stream,G2
+2026-03-02 19:46:54,437,stream,G2
+2026-03-02 19:54:08,419,stream,G2
+2026-03-02 19:55:25,635,stream,G2
+2026-03-02 19:56:40,700,stream,G1
+2026-03-02 20:09:04,537,stream,G2
+2026-03-02 20:10:48,631,stream,G1
+2026-03-02 20:19:15,1581,stream,G2
+2026-03-02 20:28:20,1207,stream,G2
+2026-03-02 20:31:38,666,stream,G2
+2026-03-02 20:36:24,1227,stream,G3
+2026-03-02 20:38:17,804,stream,G2
+2026-03-02 20:39:07,519,stream,G2
+2026-03-02 20:39:54,1258,stream,G2
+2026-03-02 20:43:38,420,stream,G2
+2026-03-02 20:54:52,506,stream,G3
+,516,batch,G1
+,671,batch,G2
+,446,batch,G1
 ,553,batch,G3
-,630,batch,G2
-,538,batch,G2
-,604,batch,G3
-,485,batch,G2
-,839,batch,G3
-,590,batch,G2
-,1150,batch,G1
-,685,batch,G2
-,1434,batch,G1
-,509,batch,G3
-,846,batch,G2
-,415,batch,G1
-,920,batch,G2
-,893,batch,G2
-,421,batch,G2
-,775,batch,G2
-,308,batch,G3
-,232,batch,G2
-,610,batch,G3
-,454,batch,G3
-,664,batch,G3
-,636,batch,G3
-,1092,batch,G2
-,1308,batch,G2
-,216,batch,G2
-,717,batch,G1
-,1129,batch,G3
-,948,batch,G1
-,941,batch,G1
-,1326,batch,G2
-,565,batch,G2
-,1179,batch,G2
-,734,batch,G3
-,971,batch,G2
-,346,batch,G1
-,582,batch,G2
-,1288,batch,G2
-,784,batch,G1
-,493,batch,G3
-,1224,batch,G2
-,306,batch,G3
-,1270,batch,G2
-,618,batch,G1
-,770,batch,G3
-,1011,batch,G2
-,666,batch,G2
-,295,batch,G2
-,525,batch,G2
-,502,batch,G2
-,1432,batch,G2
-,322,batch,G2
-,2076,batch,G1
-,687,batch,G2
-,1538,batch,G1
-,954,batch,G3
-,1319,batch,G1
-,819,batch,G3
-,425,batch,G2
-,831,batch,G2
-,1129,batch,G3
-,1505,batch,G2
-,545,batch,G2
-,920,batch,G2
-,522,batch,G1
-,728,batch,G1
-,1546,batch,G2
-,1540,batch,G2
-,656,batch,G2
-,693,batch,G2
-,1460,batch,G3
-,437,batch,G2
-,1476,batch,G2
-,1533,batch,G2
-,2426,batch,G2
-,452,batch,G2
-,990,batch,G3
-,1114,batch,G1
-,421,batch,G2
-,762,batch,G2
-,1526,batch,G1
-,730,batch,G1
-,561,batch,G3
-,297,batch,G3
-,798,batch,G2
-,642,batch,G1
-,443,batch,G2
-,318,batch,G3
-,484,batch,G2
-,571,batch,G2
-,938,batch,G1
-,748,batch,G2
-,902,batch,G3
-,402,batch,G3
-,1378,batch,G2
-,2035,batch,G2
-,1030,batch,G2
-,1434,batch,G2
-,891,batch,G2
-,955,batch,G3
-,1738,batch,G3
-,977,batch,G2
-,584,batch,G2
-,1134,batch,G2
-,537,batch,G2
-,544,batch,G2
-,755,batch,G2
-,1241,batch,G2
-,707,batch,G1
-,810,batch,G2
-,613,batch,G1
-,813,batch,G2
-,289,batch,G2
-,435,batch,G1
-,715,batch,G3
-,773,batch,G2
-,708,batch,G1
-,408,batch,G1
-,1001,batch,G2
-,1153,batch,G2
-,1259,batch,G3
-,382,batch,G2
-,1287,batch,G3
+,868,batch,G1
+,673,batch,G3
+,596,batch,G3
+,916,batch,G2
+,1075,batch,G3
+,1337,batch,G2
+,1502,batch,G1
+,1051,batch,G3
+,636,batch,G2
+,985,batch,G3
+,500,batch,G2
+,858,batch,G3
+,878,batch,G1
 ,869,batch,G2
-,770,batch,G1
-,712,batch,G1
-,627,batch,G2
-,268,batch,G2
-,1071,batch,G1
-,408,batch,G1
-,635,batch,G3
-,1031,batch,G3
-,1129,batch,G2
-,1741,batch,G1
-,687,batch,G2
-,714,batch,G1
-,1037,batch,G2
-,1381,batch,G3
-,932,batch,G3
-,556,batch,G1
-,1166,batch,G3
-,1170,batch,G2
-,951,batch,G3
-,639,batch,G2
-,3161,batch,G3
-,1051,batch,G1
-,1360,batch,G2
-,1094,batch,G3
-,980,batch,G2
-,472,batch,G1
-,852,batch,G1
-,2654,batch,G2
-,445,batch,G1
-,777,batch,G2
+,404,batch,G2
+,941,batch,G1
+,1368,batch,G3
+,1171,batch,G1
+,1381,batch,G2
+,492,batch,G2
+,276,batch,G2
+,605,batch,G3
+,939,batch,G1
+,867,batch,G2
+,836,batch,G1
+,743,batch,G3
+,505,batch,G2
+,1222,batch,G2
+,292,batch,G2
+,405,batch,G2
+,1118,batch,G2
+,724,batch,G2
+,550,batch,G3
+,844,batch,G1
+,695,batch,G1
+,340,batch,G3
+,338,batch,G3
 ,523,batch,G2
-,1868,batch,G1
-,1043,batch,G2
-,661,batch,G3
-,538,batch,G1
-,546,batch,G2
-,729,batch,G3
-,246,batch,G1
-,434,batch,G2
-,615,batch,G3
-,470,batch,G2
-,473,batch,G2
-,452,batch,G2
-,994,batch,G2
-,417,batch,G3
-,662,batch,G3
-,613,batch,G2
-,615,batch,G1
-,617,batch,G1
-,530,batch,G2
-,716,batch,G3
-,552,batch,G1
-,896,batch,G1
-,1719,batch,G2
-,426,batch,G2
-,1306,batch,G2
-,511,batch,G2
-,530,batch,G1
-,1178,batch,G2
-,367,batch,G2
-,1145,batch,G3
-,383,batch,G3
-,639,batch,G1
-,1037,batch,G2
-,408,batch,G1
-,284,batch,G2
-,915,batch,G2
-,618,batch,G2
-,662,batch,G2
-,1348,batch,G2
-,571,batch,G2
-,1002,batch,G2
-,968,batch,G3
-,1864,batch,G2
-,934,batch,G2
-,396,batch,G2
-,596,batch,G1
-,1104,batch,G2
-,594,batch,G1
-,782,batch,G1
-,295,batch,G2
-,603,batch,G2
-,1218,batch,G3
-,587,batch,G3
-,497,batch,G1
-,820,batch,G2
-,487,batch,G3
-,339,batch,G1
-,340,batch,G2
-,1195,batch,G3
-,851,batch,G1
-,786,batch,G2
-,495,batch,G2
-,533,batch,G2
-,513,batch,G2
-,1482,batch,G3
-,630,batch,G2
-,1048,batch,G1
-,978,batch,G2
+,1217,batch,G1
+,2198,batch,G1
+,957,batch,G2
+,825,batch,G1
+,586,batch,G3
+,917,batch,G1
+,463,batch,G2
+,701,batch,G2
+,629,batch,G3
+,1100,batch,G2
+,744,batch,G1
+,698,batch,G2
+,231,batch,G2
+,568,batch,G2
+,902,batch,G2
+,932,batch,G2
+,1092,batch,G1
+,835,batch,G2
+,379,batch,G3
+,785,batch,G1
+,414,batch,G2
+,1374,batch,G2
+,665,batch,G1
+,758,batch,G2
+,378,batch,G3
+,523,batch,G1
+,1140,batch,G2
+,787,batch,G3
+,1102,batch,G1
+,1619,batch,G3
+,556,batch,G2
+,1287,batch,G2
+,310,batch,G2
+,764,batch,G2
+,1919,batch,G3
+,705,batch,G3
+,612,batch,G3
+,626,batch,G2
+,1076,batch,G2
+,376,batch,G2
+,529,batch,G2
+,800,batch,G2
+,555,batch,G1
+,386,batch,G2
+,1201,batch,G3
+,696,batch,G1
+,535,batch,G2
+,576,batch,G3
+,666,batch,G1
+,1103,batch,G1
+,1066,batch,G1
+,219,batch,G1
+,1574,batch,G3
+,590,batch,G2
+,683,batch,G1
+,838,batch,G2
+,1406,batch,G2
+,1764,batch,G1
+,2436,batch,G2
+,636,batch,G2
+,299,batch,G1
+,1039,batch,G1
+,1041,batch,G2
+,543,batch,G3
+,837,batch,G1
+,409,batch,G2
+,729,batch,G2
+,1391,batch,G1
+,721,batch,G2
+,1264,batch,G2
+,405,batch,G3
+,1045,batch,G1
+,407,batch,G2
+,494,batch,G3
+,1078,batch,G1
+,1136,batch,G3
+,1323,batch,G2
+,1623,batch,G2
+,819,batch,G2
+,597,batch,G2
+,616,batch,G3
 ,652,batch,G2
-,1586,batch,G3
-,1035,batch,G3
-,659,batch,G3
-,570,batch,G3
-,1017,batch,G2
-,333,batch,G3
-,619,batch,G2
-,385,batch,G1
-,550,batch,G2
-,650,batch,G2
-,530,batch,G2
-,642,batch,G3
-,967,batch,G3
-,424,batch,G2
-,1095,batch,G1
-,558,batch,G2
-,451,batch,G2
-,790,batch,G3
-,671,batch,G1
-,692,batch,G1
-,2028,batch,G2
-,512,batch,G1
-,231,batch,G1
-,1244,batch,G2
-,826,batch,G1
-,1182,batch,G1
-,753,batch,G1
-,382,batch,G2
-,890,batch,G1
-,453,batch,G3
-,759,batch,G3
-,1101,batch,G1
-,392,batch,G2
-,923,batch,G1
-,803,batch,G1
+,689,batch,G3
+,660,batch,G3
+,1154,batch,G3
+,331,batch,G2
+,316,batch,G3
+,913,batch,G1
+,636,batch,G3
+,703,batch,G1
+,660,batch,G1
+,693,batch,G1
+,538,batch,G1
+,1407,batch,G2
+,898,batch,G2
+,1298,batch,G2
+,885,batch,G3
+,1074,batch,G1
+,2009,batch,G1
+,545,batch,G3
+,294,batch,G1
+,1007,batch,G2
+,232,batch,G3
+,548,batch,G2
+,579,batch,G2
+,936,batch,G2
+,1410,batch,G2
+,1616,batch,G3
+,1903,batch,G1
+,502,batch,G2
+,1560,batch,G2
+,427,batch,G2
+,597,batch,G3
+,372,batch,G2
+,463,batch,G3
+,713,batch,G1
+,1040,batch,G3
+,1233,batch,G2
+,1153,batch,G2
+,933,batch,G2
+,898,batch,G2
+,390,batch,G3
+,713,batch,G2
+,979,batch,G2
+,885,batch,G2
+,519,batch,G3
+,2989,batch,G2
+,429,batch,G2
+,497,batch,G3
+,1871,batch,G2
+,616,batch,G3
+,646,batch,G3
+,329,batch,G1
+,1406,batch,G2
+,1336,batch,G1
+,797,batch,G2
+,342,batch,G2
+,875,batch,G1
+,1547,batch,G3
+,836,batch,G2
+,571,batch,G1
+,1019,batch,G3
+,590,batch,G3
+,1217,batch,G3
+,796,batch,G2
+,868,batch,G2
+,506,batch,G2
+,337,batch,G2
+,522,batch,G2
+,740,batch,G2
+,674,batch,G2
+,363,batch,G1
+,1091,batch,G2
+,1101,batch,G2
+,877,batch,G2
+,513,batch,G2
+,580,batch,G1
+,773,batch,G2
+,1597,batch,G3
+,1067,batch,G2
+,457,batch,G2
+,1002,batch,G2
+,1147,batch,G1
+,407,batch,G3
+,1248,batch,G2
+,635,batch,G1
+,400,batch,G2
+,256,batch,G1
+,490,batch,G1
+,1891,batch,G1
+,1185,batch,G2
+,1722,batch,G2
+,1047,batch,G2
+,816,batch,G3
+,880,batch,G1
+,684,batch,G3
+,568,batch,G3
+,476,batch,G1
+,476,batch,G3
+,437,batch,G2
+,449,batch,G3
+,737,batch,G2
+,499,batch,G2
+,651,batch,G3
+,688,batch,G2
+,855,batch,G2
+,402,batch,G2
+,1113,batch,G1
+,1529,batch,G2
+,459,batch,G3
+,724,batch,G2
+,1047,batch,G2
+,611,batch,G2
+,1049,batch,G2
+,1253,batch,G1
+,852,batch,G1
+,967,batch,G2
+,1110,batch,G2
+,851,batch,G2
+,1025,batch,G2
+,884,batch,G1
+,581,batch,G2
+,2364,batch,G3
+,957,batch,G2
+,556,batch,G3
+,700,batch,G2
+,1423,batch,G3
+,607,batch,G1
+,1119,batch,G2
+,378,batch,G2
+,723,batch,G1
+,1001,batch,G2
+,519,batch,G3
+,678,batch,G1
+,491,batch,G3
+,504,batch,G2
+,569,batch,G2
+,1685,batch,G2
+,487,batch,G2
+,372,batch,G3
+,873,batch,G1
+,1024,batch,G2
+,344,batch,G3
+,664,batch,G3
+,1242,batch,G3
+,626,batch,G2
+,577,batch,G3
+,784,batch,G1
+,1245,batch,G3
+,371,batch,G2
+,1619,batch,G3
+,330,batch,G2
+,1039,batch,G1
+,778,batch,G2
+,1145,batch,G2
+,585,batch,G2
+,515,batch,G2
+,233,batch,G1
+,428,batch,G2
+,1184,batch,G2
+,570,batch,G2
+,874,batch,G2
+,833,batch,G1
+,760,batch,G1
+,1198,batch,G2
+,716,batch,G2
+,1109,batch,G1
+,364,batch,G1
+,956,batch,G2
+,908,batch,G1
+,1403,batch,G2
+,835,batch,G1
+,780,batch,G3
+,444,batch,G2
+,1071,batch,G3
+,359,batch,G2
+,446,batch,G2
+,523,batch,G2
+,770,batch,G2
+,685,batch,G2
+,556,batch,G2
+,1199,batch,G1
+,1747,batch,G3
+,542,batch,G1
+,1550,batch,G2
+,1585,batch,G2
+,869,batch,G2
+,720,batch,G3
+,340,batch,G3
+,1052,batch,G2
+,708,batch,G2
+,497,batch,G1
+,553,batch,G2
+,554,batch,G2
+,1006,batch,G2
+,1215,batch,G2
+,534,batch,G2
+,603,batch,G1
+,537,batch,G2
+,505,batch,G3
+,1033,batch,G3
+,524,batch,G3
+,813,batch,G1
+,727,batch,G3
+,738,batch,G2
+,407,batch,G2
+,564,batch,G1
+,1133,batch,G1
+,1381,batch,G2
+,1072,batch,G3
+,1003,batch,G2
+,998,batch,G1
+,1141,batch,G3
+,1832,batch,G2
+,546,batch,G2
+,616,batch,G1
+,737,batch,G1
+,1802,batch,G2
+,1101,batch,G3
+,669,batch,G2
+,1115,batch,G2
+,1199,batch,G1
+,602,batch,G3
+,1328,batch,G2
+,1400,batch,G3
+,287,batch,G1
+,478,batch,G2
+,886,batch,G1
