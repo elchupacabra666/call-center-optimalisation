@@ -28,12 +28,11 @@ def generuj_provoz(
     if seed is not None:
         np.random.seed(seed)
     
-    # 1. Log-normální rozdělení pro délku (AHT)
+    # 1. Logaritmicko-normální rozdělení pro délku (AHT)
     # mu a sigma nastaveny tak, aby průměr byl cca 15 min (900s)
     # a objevovaly se i dlouhé hovory (chvost distribuce)
-    mu, sigma = 6.6, 0.5 
+    mu, sigma = 6.34, 0.96
     durations = np.random.lognormal(mu, sigma, pocet_hovoru)
-    durations_list = list(durations.astype(int))
     
     # 2. Split into batch and stream calls
     if use_night_batch:
@@ -46,16 +45,42 @@ def generuj_provoz(
         sources = ['stream'] * num_stream
     
     # 3. Assign difficulty groups (G1, G2, G3) to all calls
-    n_g3 = round(pocet_hovoru * split['G3_Hard'])
-    n_g2 = round(pocet_hovoru * split['G2_Med'])
-    n_g1 = pocet_hovoru - n_g3 - n_g2
-    
+    # Použijeme Hamiltonovu metodu (největších zbytků), aby se počty vždy přesně
+    # sečetly na pocet_hovoru a žádný počet nemohl vyjít záporně (jak by to
+    # umělo naivní `n_g1 = pocet_hovoru - round(n_g3) - round(n_g2)`).
+    raw_counts = {
+        'G3': pocet_hovoru * split['G3_Hard'],
+        'G2': pocet_hovoru * split['G2_Med'],
+        'G1': pocet_hovoru * split['G1_Easy'],
+    }
+    # Každá skupina dostane celočíselný díl (floor), zbytek rozdělíme podle
+    # největší zlomkové části.
+    counts = {g: int(raw) for g, raw in raw_counts.items()}
+    remainder = pocet_hovoru - sum(counts.values())
+    # Defenzivně ošetříme případ, kdy by split součet mírně přesáhl 1.0 kvůli FP.
+    if remainder < 0:
+        # Ubereme těm s nejmenší zlomkovou částí (tedy nejméně "zaslouženým").
+        order = sorted(raw_counts.items(), key=lambda x: x[1] - int(x[1]))
+        for g, _ in order:
+            if remainder == 0:
+                break
+            if counts[g] > 0:
+                counts[g] -= 1
+                remainder += 1
+    else:
+        # Přidáme těm s největší zlomkovou částí.
+        order = sorted(raw_counts.items(), key=lambda x: -(x[1] - int(x[1])))
+        for g, _ in order[:remainder]:
+            counts[g] += 1
+
+    n_g3, n_g2, n_g1 = counts['G3'], counts['G2'], counts['G1']
+
     groups = ['G3'] * n_g3 + ['G2'] * n_g2 + ['G1'] * n_g1
     np.random.shuffle(groups)  # Shuffle groups so they're not systematically ordered
     
     # 4. Timestamps
     start_dne = datetime(2026, 3, 2, 9, 0, 0)
-    vterin_v_pracovni_dobe = 12 * 3600  # 12 hodin provozu (8:00 - 20:00)
+    vterin_v_pracovni_dobe = 12 * 3600  # 12 hodin provozu (9:00 - 21:00)
     
     # Batch calls get NaT, stream calls get timestamps
     timestamps = []
@@ -65,23 +90,18 @@ def generuj_provoz(
         else:
             timestamps.append(start_dne + timedelta(seconds=np.random.randint(0, vterin_v_pracovni_dobe)))
     
-    # 5. Sort by timestamp (NaT values will be at the end)
-    combined = list(zip(timestamps, durations_list, sources, groups))
-    combined_stream = [(ts, dur, src, grp) for ts, dur, src, grp in combined if src == 'stream']
-    combined_batch = [(ts, dur, src, grp) for ts, dur, src, grp in combined if src == 'batch']
-    
-    combined_stream.sort(key=lambda x: x[0])
-    combined = combined_stream + combined_batch
-    
-    timestamps, durations_list, sources, groups = zip(*combined)
-    
-    # 6. Create DataFrame
+    # 5. Create DataFrame
     df = pd.DataFrame({
         'timestamp': timestamps,
-        'duration_s': durations_list,
+        'duration_s': list(durations.astype(int)),
         'source': sources,
         'group': groups
     })
+    
+    # 6. Sort: stream calls chronologically first, batch calls at the end
+    df_stream = df[df['source'] == 'stream'].sort_values('timestamp')
+    df_batch = df[df['source'] == 'batch']
+    df = pd.concat([df_stream, df_batch]).reset_index(drop=True)
     
     # Save to CSV
     if output_path:

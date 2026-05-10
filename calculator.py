@@ -37,7 +37,8 @@ def load_demand_data(data_source, batch_deadline: int = 14, use_night_batch: boo
     # Pro každou skupinu (jednoduší, střední, těžcí agenti) sečteme kolik minut práce mají za každou hodinu
     stream_demand_by_group = {}
     for group in ['G1', 'G2', 'G3']:
-        df_stream_group = df_stream[df_stream['group'] == group]
+        # .copy() abychom nemanipulovali s view a nedostali SettingWithCopyWarning
+        df_stream_group = df_stream[df_stream['group'] == group].copy()
         if len(df_stream_group) > 0:
             df_stream_group['hour'] = df_stream_group['timestamp'].dt.hour
             stream_demand_by_group[group] = df_stream_group.groupby('hour')['duration_s'].sum() / 60
@@ -118,45 +119,51 @@ def optimize_schedule(
                                lowBound=0, cat='Integer')
     
     # Rozhodovací proměnné: Kolik minut batch práce budeme dělat v každé hodině (pro každou skupinu)?
-    # Příklad: batch_assigned_by_group[(10, 'G1')] = 30 znamená "30 minut batch práce pro G1 v 10:00"
-    batch_assigned_by_group = LpVariable.dicts("BatchAssignedByGroup",
-                                               ((h, g) for h in range(9, batch_deadline + 1) for g in groups),
+    # Příklad: batch_by_group[(10, 'G1')] = 30 znamená "30 minut batch práce pro G1 v 10:00"
+    batch_by_group = LpVariable.dicts("BatchByGroup",
+                                               ((h, g) for h in range(9, batch_deadline) for g in groups),
                                                lowBound=0, cat='Continuous')
     
     # Omezení 1: Všechna batch práce musí být hotová do deadline
     # Pokud má G1 100 minut batch práce, musíme ji rozvrhnout mezi 9:00 a deadline tak, aby se sečetla na 100
     for g in groups:
-        prob += lpSum([batch_assigned_by_group[(h, g)] for h in range(9, batch_deadline + 1)]) == batch_total_by_group[g], f"Batch_Deadline_{g}"
+        prob += lpSum([batch_by_group[(h, g)] for h in range(9, batch_deadline)]) == batch_total_by_group[g], f"Batch_Deadline_{g}"
     
-    # Najdeme všechny hodiny, kde jsou stream hovory - ty se musí pokrýt v každém případě
-    all_hours = set()
-    for g in groups:
-        all_hours.update(stream_demand_by_group[g].index)
-    all_hours = sorted(all_hours)
+    # Pokrýváme všechny provozní hodiny 9:00-20:59 bez ohledu na to,
+    # zda v nich zrovna stream obsahuje záznam
+    all_hours = range(9, 21)
     
     # Omezení 2: V každé hodině musíme mít dost kapacity na stream hovory + batch práci kterou jsme naplánovali
     # Stream hovory jsou naléhavé (zákazník čeká), batch si můžeme vybrat kdy dělat
+    #
+    # SKILL CASCADE (kumulativní pokrytí):
+    # - G3 práci umí jen G3 agenti
+    # - G2 práci umí G3 nebo G2 agenti
+    # - G1 práci umí kdokoli (G3, G2, G1)
+    # Constrainty formulujeme kumulativně: kapacita na dané úrovni a výš
+    # musí pokrýt součet práce na dané úrovni a výš.
     for t in all_hours:
         # Spočítáme kolik agentů máme v každé skupině v tuto hodinu
         staff_g3 = get_active_workers(shifts, t, 'G3')
         staff_g2 = get_active_workers(shifts, t, 'G2')
         staff_g1 = get_active_workers(shifts, t, 'G1')
-        
+
         # Každý agent zvládne 30 minut práce za hodinu (60 minut * 50% occupancy)
         capacity_per_agent = 60 * occupancy
-        
-        # Pro každou skupinu: Kapacita agentů >= potřebná práce (stream + batch)
-        stream_g3 = stream_demand_by_group['G3'].get(t, 0)
-        batch_g3 = batch_assigned_by_group[(t, 'G3')] if t <= batch_deadline else 0
-        prob += staff_g3 * capacity_per_agent >= stream_g3 + batch_g3, f"G3_Coverage_Hour_{t}"
-        
-        stream_g2 = stream_demand_by_group['G2'].get(t, 0)
-        batch_g2 = batch_assigned_by_group[(t, 'G2')] if t <= batch_deadline else 0
-        prob += staff_g2 * capacity_per_agent >= stream_g2 + batch_g2, f"G2_Coverage_Hour_{t}"
-        
-        stream_g1 = stream_demand_by_group['G1'].get(t, 0)
-        batch_g1 = batch_assigned_by_group[(t, 'G1')] if t <= batch_deadline else 0
-        prob += staff_g1 * capacity_per_agent >= stream_g1 + batch_g1, f"G1_Coverage_Hour_{t}"
+
+        # Práce (stream + batch) po skupinách v této hodině
+        work_g3 = stream_demand_by_group['G3'].get(t, 0) + (batch_by_group[(t, 'G3')] if t < batch_deadline else 0)
+        work_g2 = stream_demand_by_group['G2'].get(t, 0) + (batch_by_group[(t, 'G2')] if t < batch_deadline else 0)
+        work_g1 = stream_demand_by_group['G1'].get(t, 0) + (batch_by_group[(t, 'G1')] if t < batch_deadline else 0)
+
+        # G3 práci zvládnou jen G3 agenti
+        prob += staff_g3 * capacity_per_agent >= work_g3, f"G3_Coverage_Hour_{t}"
+
+        # G2 + G3 práci zvládnou G2 a G3 agenti dohromady
+        prob += (staff_g3 + staff_g2) * capacity_per_agent >= work_g3 + work_g2, f"G2_Coverage_Hour_{t}"
+
+        # Celou práci (G1 + G2 + G3) zvládnou všichni agenti dohromady
+        prob += (staff_g3 + staff_g2 + staff_g1) * capacity_per_agent >= work_g3 + work_g2 + work_g1, f"G1_Coverage_Hour_{t}"
     
     # Omezení 3: Nemůžeme najmout unlimited agentů - máme limit na každou skupinu
     # (Poznámka: Omezení 2 už zajišťuje, že máme dost kapacity na stream+batch v každé hodině.
@@ -229,9 +236,9 @@ def optimize_schedule(
             total_stream = stream_demand_g1 + stream_demand_g2 + stream_demand_g3
             
             # Jak jsme si naplánovali zpracovat batch (z řešení optimalizace)
-            batch_g1 = value(batch_assigned_by_group[(t, 'G1')]) if t <= batch_deadline else 0
-            batch_g2 = value(batch_assigned_by_group[(t, 'G2')]) if t <= batch_deadline else 0
-            batch_g3 = value(batch_assigned_by_group[(t, 'G3')]) if t <= batch_deadline else 0
+            batch_g1 = value(batch_by_group[(t, 'G1')]) if t < batch_deadline else 0
+            batch_g2 = value(batch_by_group[(t, 'G2')]) if t < batch_deadline else 0
+            batch_g3 = value(batch_by_group[(t, 'G3')]) if t < batch_deadline else 0
             total_batch = batch_g1 + batch_g2 + batch_g3
             
             # Celková práce a jak moc jsme vytížení

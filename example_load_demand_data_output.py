@@ -94,7 +94,7 @@ print("=" * 60)
 # 
 # for g in groups:  # Pro každou skupinu
 #     prob += lpSum([
-#         batch_assigned_by_group[(h, g)] 
+#         batch_by_group[(h, g)] 
 #         for h in range(8, batch_deadline + 1)
 #     ]) == batch_total_by_group[g]
 #

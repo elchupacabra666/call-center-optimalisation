@@ -2,24 +2,69 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from state_utils import persist_state
 
 st.set_page_config(page_title="Výsledky", layout="wide")
+persist_state()  # Ochrana session_state klíčů před GC při navigaci mezi stránkami
+
+# Skrýt Streamlit element toolbar (fullscreen / download / search ikonky,
+# které se objeví při najetí myší na dataframe a grafy). Uživatel je na
+# této stránce nechce vidět ani u tabulek, ani u grafů.
+st.markdown(
+    """
+    <style>
+    [data-testid="stElementToolbar"] { display: none !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Plotly charts si navíc řídíme vlastní `displayModeBar` – viz PLOTLY_CONFIG níže.
+PLOTLY_CONFIG = {"displayModeBar": False}
 
 st.title("Výsledky optimalizace")
 
 # Check if results exist
 if 'results' not in st.session_state:
-    st.warning("⚠️ Nejprve spusťte optimalizaci na stránce **Konfigurace**")
+    st.warning("Nejprve spusťte optimalizaci na stránce **Konfigurace**")
     st.stop()
 
 results = st.session_state['results']
 params = st.session_state['params']
 
+GROUP_ORDER = [g for g in ['G1', 'G2', 'G3'] if g in params['groups']]
+PIE_GROUP_ORDER = [g for g in ['G3', 'G2', 'G1'] if g in params['groups']]
+GROUP_COLORS = {
+    'G1': '#90EE90',
+    'G2': '#FFB703',
+    'G3': '#FF6B6B',
+}
+BATCH_GROUP_COLORS = {
+    'G1': '#669966',
+    'G2': '#AA7700',
+    'G3': '#AA3333',
+}
+
 if results['status'] != 'Optimal':
-    st.error(f"❌ Optimalizace selhala: {results['status']}")
+    status_text = str(results['status'])
+
+    if status_text == 'Infeasible':
+        st.error("❌ Optimalizace nenašla proveditelné řešení.")
+        st.info(
+            "Pravděpodobná příčina je nedostatek kapacit vůči požadované poptávce "
+            "(např. nízké limity agentů, příliš vysoká occupancy omezení nebo příliš přísný batch deadline)."
+        )
+        st.markdown("**Co zkusit upravit:**")
+        st.markdown("- zvýšit limity agentů ve skupinách G1/G2/G3")
+        st.markdown("- přidat směny nebo prodloužit délku směny")
+        st.markdown("- posunout `batch deadline` na pozdější hodinu")
+        st.markdown("- případně snížit vstupní poptávku / zkontrolovat kvalitu dat")
+        st.caption(f"Technický status solveru: {status_text}")
+    else:
+        st.error(f"Optimalizace selhala: {status_text}")
     st.stop()
 
-st.success(f"✅ Optimalizace dokončena: {results['status']}")
+st.success(f"Optimalizace dokončena: {results['status']}")
 
 # Key metrics
 col1, col2, col3, col4 = st.columns(4)
@@ -87,15 +132,21 @@ with col_left:
     
     cost_breakdown = pd.DataFrame([
         {'Skupina': g, 'Náklady': results['agents_by_group'][g]['total_cost']}
-        for g in params['groups']
+        for g in GROUP_ORDER
         if results['agents_by_group'][g]['total_cost'] > 0
     ])
     
     if not cost_breakdown.empty:
-        fig_pie = px.pie(cost_breakdown, values='Náklady', names='Skupina', 
-                        color_discrete_sequence=['#FF6B6B', '#4ECDC4', '#45B7D1'])
+        fig_pie = px.pie(
+            cost_breakdown,
+            values='Náklady',
+            names='Skupina',
+            color='Skupina',
+            category_orders={'Skupina': PIE_GROUP_ORDER},
+            color_discrete_map=GROUP_COLORS,
+        )
         fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, use_container_width=True, config=PLOTLY_CONFIG)
 
 with col_right:
     st.subheader("Hodinová poptávka a kapacita")
@@ -106,22 +157,22 @@ with col_right:
     fig = go.Figure()
     
     # Stream demand for each group (stacked)
-    for g, color in [('G3', '#FF6B6B'), ('G2', '#FFB703'), ('G1', '#90EE90')]:
+    for g in GROUP_ORDER:
         fig.add_trace(go.Bar(
             x=df_hourly['hour'],
             y=df_hourly[f'stream_demand_{g.lower()}'],
             name=f'Stream {g}',
-            marker=dict(color=color),
+            marker=dict(color=GROUP_COLORS[g]),
             hovertemplate='%{x}:00<br>Stream ' + g + ': %{y:.1f} min<extra></extra>'
         ))
     
     # Batch demand for each group (stacked on top)
-    for g, color in [('G3', '#AA3333'), ('G2', '#AA7700'), ('G1', '#669966')]:
+    for g in GROUP_ORDER:
         fig.add_trace(go.Bar(
             x=df_hourly['hour'],
             y=df_hourly[f'batch_assigned_{g.lower()}'],
             name=f'Batch {g}',
-            marker=dict(color=color, pattern_shape="/"),
+            marker=dict(color=BATCH_GROUP_COLORS[g], pattern_shape="/"),
             hovertemplate='%{x}:00<br>Batch ' + g + ': %{y:.1f} min<extra></extra>'
         ))
     
@@ -145,7 +196,7 @@ with col_right:
         legend=dict(orientation="v", yanchor="top", y=0.99, xanchor="right", x=0.99)
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CONFIG)
     
     st.markdown("---")
     
@@ -167,7 +218,7 @@ with col_right:
         yaxis_range=[0, 100]
     )
     
-    st.plotly_chart(fig_util, use_container_width=True)
+    st.plotly_chart(fig_util, use_container_width=True, config=PLOTLY_CONFIG)
     
     st.markdown("---")
     
@@ -176,11 +227,12 @@ with col_right:
     
     fig_staff = go.Figure()
     
-    for g in ['G3', 'G2', 'G1']:
+    for g in GROUP_ORDER:
         fig_staff.add_trace(go.Bar(
             x=df_hourly['hour'],
             y=df_hourly[g],
             name=g,
+            marker=dict(color=GROUP_COLORS[g]),
             text=df_hourly[g],
             textposition='inside'
         ))
@@ -193,7 +245,7 @@ with col_right:
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     
-    st.plotly_chart(fig_staff, use_container_width=True)
+    st.plotly_chart(fig_staff, use_container_width=True, config=PLOTLY_CONFIG)
 
 # Detailed hourly table at bottom
 st.markdown("---")
