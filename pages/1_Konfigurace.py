@@ -68,9 +68,9 @@ with col1:
     st.number_input("G2 - Kč/hod", step=10, key="cost_g2")
     st.number_input("G3 - Kč/hod", step=10, key="cost_g3")
 with col2:
-    st.number_input("G1 - Max", step=5, key="limit_g1")
-    st.number_input("G2 - Max", step=5, key="limit_g2")
-    st.number_input("G3 - Max", step=5, key="limit_g3")
+    st.number_input("G1 - Maximální počet", step=5, key="limit_g1")
+    st.number_input("G2 - Maximální počet", step=5, key="limit_g2")
+    st.number_input("G3 - Maximální počet", step=5, key="limit_g3")
 
 st.markdown("---")
 st.subheader("Směny")
@@ -151,7 +151,7 @@ if group_split_valid:
 else:
     st.error("Součet G1 + G2 nesmí být větší než 100 %.")
 
-st.number_input("Seed (0 = náhodný)", min_value=0, max_value=99999, step=1, key="gen_seed")
+st.number_input("Seed (0 = náhodný)", min_value=0, max_value=99999, step=1, key="gen_seed", help="Umožňuje zafixovat náhodné generování. Pokud zadáte nenulovou hodnotu (např. 42), generátor vygeneruje vždy úplně stejná data. Provedete-li změnu, vygenerují se data nová, ale opět se stejným výsledkem, pokud zachováte stejný seed. To je užitečné pro testování a porovnávání výsledků.")
 seed = None if st.session_state["gen_seed"] == 0 else int(st.session_state["gen_seed"])
 
 # Preview

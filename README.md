@@ -1,0 +1,1 @@
+Pro spuštění nainstalujte knihovny z requirements.txt a spusťte příkaz: python -m streamlit run Navod.py
