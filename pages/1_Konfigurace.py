@@ -34,7 +34,7 @@ _defaults = {
     "gen_seed": 0,
     # Výchozí starty směn: pro default shift_length=8 je platný rozsah 9–13.
     "shift_0": 9,
-    "shift_1": 11,
+    "shift_1": 13,
     "shift_2": 13,
     "shift_3": 10,
     "shift_4": 12,

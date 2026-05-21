@@ -211,6 +211,7 @@ with col_right:
         color='utilization',
         color_continuous_scale=['#4ECDC4', '#FFE66D', '#FF6B6B']
     )
+    fig_util.update_traces(hovertemplate='%{x}:00<br>Využití: %{y:.1f}%<extra></extra>')
     
     fig_util.update_layout(
         showlegend=False,

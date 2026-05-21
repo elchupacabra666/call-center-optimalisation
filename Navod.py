@@ -34,6 +34,8 @@ with col1:
     * Pokud se daná směna finančně nebo kapacitně nevyplatí, optimalizátor na ni nemusí přiřadit nikoho (počet = 0).
 
     **Provozní okno je pevně nastavené na 9:00–21:00.** Každá směna se musí do tohoto okna vejít celou svou délkou – tj. platí `začátek + délka ≤ 21`. Například při délce směny 8 hodin jsou dovolené začátky 9:00 až 13:00; při délce 4 hodiny 9:00 až 17:00. Toto odpovídá běžnému provozu call centra, pro které aplikace vznikla. Pokud by bylo potřeba plánovat mimo toto okno (ranní nebo noční provoz), musela by se aplikace na tuto možnost rozšířit.
+
+    Častá chyba: Směny nepokrývají celou pracovní dobu. Například při začátku poslední směny v 11:00 a délce 8 hodin nebude pokryta hodina provozu 20:00–20:59, což může vést k neproveditelnému řešení, pokud v danou hodinu existuje poptávka.
     """)
 
     st.subheader("Occupancy (Využití agenta)")
